@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c0f0d">
+  <title>type_me — Typing Speed Test</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --paper: #0c0f0d;
+      --surface: #151a16;
+      --ink: #edf2eb;
+      --muted: #9aa49c;
+      --line: #2b332d;
+      --accent: #c5f36a;
+      --accent-dark: #253512;
+      --error: #d65b57;
+      --shadow: 0 18px 55px rgba(0, 0, 0, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(197, 243, 106, 0.07), transparent 34rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, select, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .shell {
+      width: min(100% - 48px, 1040px);
+      margin: 0 auto;
+      padding: 28px 0 34px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 66px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      font-size: 19px;
+      font-weight: 780;
+      letter-spacing: -0.8px;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border-radius: 11px;
+      background: #252c26;
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .header-note {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 550;
+    }
+
+    .developer-credit {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .intro { margin-bottom: 30px; }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 11px;
+      color: #a6b69b;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9bcf4b;
+      content: "";
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 730;
+      letter-spacing: -2.5px;
+      line-height: 1.08;
+    }
+
+    .intro-copy {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .test-card {
+      overflow: hidden;
+      border: 1px solid rgba(139, 160, 132, 0.18);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      min-height: 82px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 17px 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mode-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .mode-options { display: flex; gap: 7px; }
+
+    .mode-button {
+      min-width: 47px;
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+      transition: background 150ms ease, color 150ms ease;
+    }
+
+    .mode-button:hover { background: #222a23; }
+    .mode-button[aria-pressed="true"] { background: var(--accent); color: var(--accent-dark); }
+    .mode-button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+    .timer {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      min-width: 91px;
+      justify-content: flex-end;
+    }
+
+    .timer-value {
+      font-variant-numeric: tabular-nums;
+      font-size: 29px;
+      font-weight: 720;
+      letter-spacing: -1.5px;
+    }
+
+    .timer-unit { color: var(--muted); font-size: 11px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      padding: 18px 26px 19px;
+      border-right: 1px solid var(--line);
+    }
+
+    .stat:last-child { border-right: 0; }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-variant-numeric: tabular-nums;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+    }
+
+    .stat-value small {
+      margin-left: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 550;
+      letter-spacing: 0;
+    }
+
+    .test-body { padding: 30px 34px 26px; }
+
+    .passage-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .passage-label span:last-child {
+      color: #a0aaa1;
+      font-size: 10px;
+      font-weight: 550;
+      letter-spacing: 0.2px;
+      text-transform: none;
+    }
+
+    .passage {
+      min-height: 165px;
+      margin: 0;
+      color: #859087;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: clamp(17px, 2.3vw, 21px);
+      font-weight: 500;
+      letter-spacing: -0.45px;
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+      user-select: none;
+    }
+
+    .passage .correct { color: #e3eddf; }
+    .passage .incorrect {
+      border-radius: 3px;
+      background: rgba(214, 91, 87, 0.13);
+      color: var(--error);
+    }
+
+    .passage .current {
+      position: relative;
+      color: #e3eddf;
+    }
+
+    .passage .current::before {
+      position: absolute;
+      top: 3px;
+      bottom: 1px;
+      left: -2px;
+      width: 2px;
+      border-radius: 2px;
+      background: #a9dd5b;
+      content: "";
+      animation: blink 1s steps(2, start) infinite;
+    }
+
+    @keyframes blink { to { visibility: hidden; } }
+
+    .typing-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+      resize: none;
+    }
+
+    .typing-input:focus-visible + .input-hint { outline: 2px solid #a9dd5b; outline-offset: 4px; }
+
+    .input-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 21px;
+      padding-top: 19px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hint-key {
+      display: inline-block;
+      margin-right: 7px;
+      padding: 3px 7px;
+      border: 1px solid #39433b;
+      border-radius: 5px;
+      background: #202621;
+      color: #c3cdc4;
+      font-family: inherit;
+      font-size: 10px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      padding: 0 20px 27px;
+    }
+
+    .primary-button, .secondary-button {
+      display: inline-flex;
+      min-height: 45px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 19px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    .primary-button { background: var(--accent); color: #203014; }
+    .primary-button:hover { transform: translateY(-1px); background: #d3fa82; }
+    .secondary-button { background: #252c26; color: #d4ddd4; }
+    .secondary-button:hover { background: #303a31; }
+
+    button:focus-visible { outline: 3px solid #a9dd5b; outline-offset: 3px; }
+
+    .result {
+      display: none;
+      margin: 0 34px 27px;
+      padding: 17px 19px;
+      border: 1px solid #3c4b31;
+      border-radius: 12px;
+      background: #1b2418;
+    }
+
+    .result.visible { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .result strong { font-size: 14px; }
+    .result p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .result-score { color: var(--accent); font-size: 23px; font-weight: 750; white-space: nowrap; }
+
+    .footer-note {
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 28px, 520px); padding-top: 18px; }
+      header { margin-bottom: 45px; }
+      .header-note { font-size: 11px; }
+      .intro-copy { font-size: 14px; }
+      .toolbar { min-height: 74px; padding: 14px 16px; }
+      .mode-options { gap: 2px; }
+      .mode-button { min-width: 40px; padding: 7px 6px; font-size: 12px; }
+      .test-body { padding: 23px 20px 22px; }
+      .passage { min-height: 190px; font-size: 17px; line-height: 1.8; }
+      .stat { padding: 15px 16px; }
+      .stat-value { font-size: 20px; }
+      .result { margin-right: 20px; margin-left: 20px; }
+    }
+
+    @media (max-width: 380px) {
+      .header-note { display: none; }
+      .toolbar { padding-right: 12px; padding-left: 12px; }
+      .mode-button { min-width: 36px; }
+      .timer { min-width: 73px; }
+      .timer-value { font-size: 26px; }
+      .stat { padding-right: 11px; padding-left: 11px; }
+      .stat-label { font-size: 9px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a class="brand" href="#" aria-label="type_me home">
+        <span class="brand-mark" aria-hidden="true">k.</span>
+        <span>type_me</span>
+      </a>
+      <span class="header-note">A little practice goes a long way.</span>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">Typing practice</p>
+      <h1 id="page-title">Find your flow.</h1>
+      <p class="intro-copy">A quick typing test to see how fast and accurately you write.</p>
+    </section>
+
+    <section class="test-card" aria-label="Typing speed test">
+      <div class="toolbar">
+        <div>
+          <span class="mode-label">Test duration</span>
+          <div class="mode-options" role="group" aria-label="Choose test duration">
+            <button class="mode-button" type="button" data-duration="15" aria-pressed="false">15s</button>
+            <button class="mode-button" type="button" data-duration="30" aria-pressed="true">30s</button>
+            <button class="mode-button" type="button" data-duration="60" aria-pressed="false">60s</button>
+            <button class="mode-button" type="button" data-duration="120" aria-pressed="false">120s</button>
+          </div>
+        </div>
+        <div class="timer" aria-label="Time remaining">
+          <span class="timer-value" id="timer">30</span>
+          <span class="timer-unit">sec</span>
+        </div>
+      </div>
+
+      <div class="stats" aria-live="polite">
+        <div class="stat">
+          <span class="stat-label">Speed</span>
+          <span class="stat-value" id="wpm">0<small>wpm</small></span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Accuracy</span>
+          <span class="stat-value" id="accuracy">100<small>%</small></span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Errors</span>
+          <span class="stat-value" id="errors">0</span>
+        </div>
+      </div>
+
+      <div class="test-body">
+        <div class="passage-label">
+          <span>Type the passage</span>
+          <span>Take your time and find a steady rhythm</span>
+        </div>
+        <p class="passage" id="passage" aria-hidden="true"></p>
+        <textarea class="typing-input" id="typing-input" aria-label="Type the passage here" autocomplete="off" autocapitalize="off" spellcheck="false" disabled></textarea>
+        <div class="input-hint" id="input-hint">
+          <span><kbd class="hint-key">Start test</kbd> then type the passage above</span>
+          <span>⌘ / Ctrl + Enter</span>
+        </div>
+      </div>
+
+      <div class="result" id="result" role="status" aria-live="polite">
+        <div>
+          <strong id="result-title">Nice work!</strong>
+          <p id="result-copy">Here's how you did.</p>
+        </div>
+        <span class="result-score" id="result-score">0 wpm</span>
+      </div>
+
+      <div class="actions">
+        <button class="primary-button" id="start-button" type="button">
+          <span aria-hidden="true">▶</span>
+          <span>Start test</span>
+        </button>
+        <button class="secondary-button" id="reset-button" type="button" aria-label="Restart test">
+          <span aria-hidden="true">↻</span>
+          <span>Restart</span>
+        </button>
+      </div>
+    </section>
+
+    <p class="footer-note">Your test runs entirely in your browser. No sign-up, no pressure.</p>
+    <p class="developer-credit">Developer: Elakshi Sood<br>BTech CSE AI, 1st Sem</p>
+  </main>
+
+  <script>
+    (() => {
+      const sample = "The best way to get better at anything is to show up and practice a little every day. Start slowly, focus on accuracy, and let your confidence grow with each sentence. Before long, the words will find their way from your thoughts to the page with ease.";
+      const passageEl = document.getElementById("passage");
+      const input = document.getElementById("typing-input");
+      const timerEl = document.getElementById("timer");
+      const wpmEl = document.getElementById("wpm");
+      const accuracyEl = document.getElementById("accuracy");
+      const errorsEl = document.getElementById("errors");
+      const resultEl = document.getElementById("result");
+      const resultTitle = document.getElementById("result-title");
+      const resultCopy = document.getElementById("result-copy");
+      const resultScore = document.getElementById("result-score");
+      const startButton = document.getElementById("start-button");
+      const resetButton = document.getElementById("reset-button");
+      const modeButtons = [...document.querySelectorAll(".mode-button")];
+      let duration = 30;
+      let remaining = duration;
+      let startedAt = null;
+      let timerId = null;
+      let finished = false;
+
+      function renderPassage(typed = "") {
+        passageEl.replaceChildren();
+        [...sample].forEach((character, index) => {
+          const span = document.createElement("span");
+          span.textContent = character;
+          if (index < typed.length) {
+            span.className = typed[index] === character ? "correct" : "incorrect";
+          } else if (index === typed.length && !finished) {
+            span.className = "current";
+          }
+          passageEl.appendChild(span);
+        });
+      }
+
+      function getMetrics() {
+        const typed = input.value;
+        const correct = [...typed].reduce((count, character, index) => count + (character === sample[index] ? 1 : 0), 0);
+        const errors = [...typed].reduce((count, character, index) => count + (character !== sample[index] ? 1 : 0), 0);
+        const elapsedMinutes = startedAt ? Math.max((Date.now() - startedAt) / 60000, 1 / 60000) : 0;
+        return {
+          wpm: elapsedMinutes ? Math.round((correct / 5) / elapsedMinutes) : 0,
+          accuracy: typed.length ? Math.round((correct / typed.length) * 100) : 100,
+          errors
+        };
+      }
+
+      function updateStats() {
+        const metrics = getMetrics();
+        wpmEl.innerHTML = `${metrics.wpm}<small>wpm</small>`;
+        accuracyEl.innerHTML = `${metrics.accuracy}<small>%</small>`;
+        errorsEl.textContent = metrics.errors;
+        renderPassage(input.value);
+      }
+
+      function startClock() {
+        if (startedAt || finished) return;
+        startedAt = Date.now();
+        input.disabled = false;
+        startButton.querySelector("span:last-child").textContent = "Test in progress";
+        document.getElementById("input-hint").innerHTML = "<span>Keep going — your progress is shown above</span><span>Stay focused</span>";
+        timerId = window.setInterval(() => {
+          remaining = Math.max(0, duration - Math.floor((Date.now() - startedAt) / 1000));
+          timerEl.textContent = remaining;
+          if (remaining === 0) finishTest();
+        }, 100);
+      }
+
+      function finishTest() {
+        if (finished) return;
+        finished = true;
+        window.clearInterval(timerId);
+        input.disabled = true;
+        const metrics = getMetrics();
+        timerEl.textContent = "0";
+        startButton.querySelector("span:last-child").textContent = "Test complete";
+        resultTitle.textContent = metrics.wpm >= 40 ? "Great work!" : "Nice work!";
+        resultCopy.textContent = `${metrics.accuracy}% accuracy · ${metrics.errors} ${metrics.errors === 1 ? "error" : "errors"}.`;
+        resultScore.textContent = `${metrics.wpm} wpm`;
+        resultEl.classList.add("visible");
+        renderPassage(input.value);
+      }
+
+      function resetTest(focusInput = false) {
+        window.clearInterval(timerId);
+        startedAt = null;
+        finished = false;
+        remaining = duration;
+        input.value = "";
+        input.disabled = true;
+        timerEl.textContent = remaining;
+        wpmEl.innerHTML = "0<small>wpm</small>";
+        accuracyEl.innerHTML = "100<small>%</small>";
+        errorsEl.textContent = "0";
+        resultEl.classList.remove("visible");
+        startButton.querySelector("span:last-child").textContent = "Start test";
+        document.getElementById("input-hint").innerHTML = '<span><kbd class="hint-key">Start test</kbd> then type the passage above</span><span>⌘ / Ctrl + Enter</span>';
+        renderPassage();
+        if (focusInput) startButton.focus();
+      }
+
+      function beginTest() {
+        if (finished) resetTest();
+        startClock();
+        input.focus();
+      }
+
+      modeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (startedAt) return;
+          duration = Number(button.dataset.duration);
+          modeButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+          resetTest();
+        });
+      });
+
+      startButton.addEventListener("click", beginTest);
+      resetButton.addEventListener("click", () => resetTest(true));
+      input.addEventListener("input", () => {
+        if (input.value.length > 0) startClock();
+        if (input.value.length >= sample.length) {
+          input.value = input.value.slice(0, sample.length);
+          updateStats();
+          finishTest();
+          return;
+        }
+        updateStats();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          beginTest();
+        }
+      });
+
+      renderPassage();
+    })();
+  </script>
+</body>
+</html>
